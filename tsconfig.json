@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "artifacts",
+    "paths": {
+      "*": [
+        "node_modules/*",
+        "example/types/*"
+      ]
+    }
+  },
+  "include": ["lib/**/*","example/**/*", "proxy.js"]
+}

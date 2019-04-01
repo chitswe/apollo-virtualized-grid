@@ -1,0 +1,61 @@
+{
+  "name": "apollo-virtualized-grid",
+  "version": "1.0.0",
+  "description": "React Material-UI table with virtual scrolling, dynamic column, dynamic layout and ApolloClient as GraphQL client. ",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc && webpack --config webpack.js",
+    "build:dist": "tsc -p tsconfig.prod.json"
+  },
+  "keywords": [
+    "react",
+    "material-ui",
+    "table",
+    "grid",
+    "virtual",
+    "scrolling",
+    "dynamic",
+    "columns",
+    "apollo",
+    "client"
+  ],
+  "author": "Chit Swe Lin",
+  "license": "ISC",
+  "dependencies": {
+    "@material-ui/core": "^3.9.3",
+    "apollo-client": "^2.5.1",
+    "classnames": "^2.2.6",
+    "graphql": "^14.2.0",
+    "immutability-helper": "^3.0.0",
+    "lodash": "^4.17.11",
+    "react": "^16.8.6",
+    "react-apollo": "^2.5.3",
+    "react-dom": "^16.7.0",
+    "react-virtualized": "^9.21.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.3.3",
+    "@babel/preset-env": "^7.3.1",
+    "@babel/preset-react": "^7.0.0",
+    "@types/classnames": "^2.2.7",
+    "@types/graphql": "^14.2.0",
+    "@types/lodash": "^4.14.123",
+    "@types/react": "^16.8.10",
+    "@types/react-dom": "^16.8.3",
+    "@types/react-virtualized": "^9.21.0",
+    "apollo-cache-inmemory": "^1.5.1",
+    "apollo-link-http": "^1.5.14",
+    "awesome-typescript-loader": "^5.2.1",
+    "babel-loader": "^8.0.5",
+    "babel-polyfill": "^6.26.0",
+    "execa": "^1.0.0",
+    "graphql-tag": "^2.10.1",
+    "source-map-loader": "^0.2.4",
+    "typescript": "^3.2.2",
+    "webpack": "^4.28.4",
+    "webpack-cli": "^3.2.1",
+    "webpack-dev-server": "^3.1.14"
+  }
+}
