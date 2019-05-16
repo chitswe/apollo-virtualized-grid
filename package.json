@@ -1,9 +1,13 @@
 {
   "name": "apollo-virtualized-grid",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "React Material-UI table with virtual scrolling, dynamic column, dynamic layout and ApolloClient as GraphQL client. ",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chitswe/apollo-virtualized-grid"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc && webpack --config webpack.js",
@@ -21,7 +25,7 @@
     "apollo",
     "client"
   ],
-  "author": "Chit Swe Lin",
+  "author": "Chit Swe Lin <chitswe.mdy@icloud.com>",
   "license": "ISC",
   "dependencies": {
     "@material-ui/core": "^3.9.3",

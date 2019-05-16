@@ -244,3 +244,4 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
 }
 
 export default ApolloVirtualizedGrid;
+export {SearchMode,CheckBoxColumnMode,GridColumn,VirtualizedGridProps, default as VirtualizedGrid} from "./VirtualizedGrid";

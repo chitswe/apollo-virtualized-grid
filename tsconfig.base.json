@@ -10,6 +10,7 @@
     "sourceMap": true,
     "jsx": "react",
     "baseUrl": ".",
+    "declaration": true,
     "lib": [
       "es5",
       "es6",

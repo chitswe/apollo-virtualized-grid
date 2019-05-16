@@ -1,0 +1,12 @@
+lib/
+artifacts/
+example/
+.babelrc
+executeApolloGen.js
+generateFragmentTypes.js
+proxy.js
+schema.json
+tsconfig.base.json
+tsconfig.json
+tsconfig.prod.json
+webpack.js
