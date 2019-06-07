@@ -128,7 +128,7 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
       <Query
         query={graphqlQuery}
         notifyOnNetworkStatusChange={true}
-        variables={{ ...variables, pageSize }}
+        variables={{ ...variables, pageSize , first:pageSize}}
         onCompleted={data => {
           if (onDataFetched && this.lastFatchedData !== data) {
             onDataFetched(data);
@@ -191,7 +191,7 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
               loadMoreRows={async (page: number) => {
                 const v = onLoadMore
                   ? onLoadMore(pageInfo)
-                  : { page, pageSize, ...variables };
+                  : { page, pageSize,first:pageSize, skip: page-1 * pageSize, ...variables };
                 const moreResult = await fetchMore({
                   variables: v,
                   updateQuery: (previousResult, { fetchMoreResult }) => { 
