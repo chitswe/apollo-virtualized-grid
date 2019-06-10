@@ -11,7 +11,8 @@ import { HttpLink } from "apollo-link-http";
 import Component from "./Component";
 import introspectionQueryResultData from "./fragmentTypes.json";
 import secret from "./secret.json";
-import { createMuiTheme, MuiThemeProvider } from "@material-ui/core";
+import { createMuiTheme } from "@material-ui/core";
+import {ThemeProvider} from "@material-ui/styles";
 
 const authFetch = (input: RequestInfo, init?: RequestInit) => {
   init.headers = {
@@ -36,21 +37,18 @@ const apolloClient = new ApolloClient({
   })
 });
 const theme = createMuiTheme({
-  typography: {
-    useNextVariants: true
-  },
   palette: {
     type: "dark"
   }
 });
 const Root = () => (
   <ApolloProvider client={apolloClient}>
-    <MuiThemeProvider theme={theme}>
+    <ThemeProvider theme={theme}>
       <React.Fragment>
         <CssBaseline />
         <Component />
       </React.Fragment>
-    </MuiThemeProvider>
+    </ThemeProvider>
   </ApolloProvider>
 );
 

@@ -28,7 +28,7 @@
   "author": "Chit Swe Lin <chitswe.mdy@icloud.com>",
   "license": "ISC",
   "dependencies": {
-    "@material-ui/core": "^3.9.3",
+    "@material-ui/core": "^4.1.0",
     "apollo-client": "^2.5.1",
     "classnames": "^2.2.6",
     "graphql": "^14.2.0",
@@ -36,7 +36,7 @@
     "lodash": "^4.17.11",
     "react": "^16.8.6",
     "react-apollo": "^2.5.3",
-    "react-dom": "^16.7.0",
+    "react-dom": "^16.8.6",
     "react-virtualized": "^9.21.0"
   },
   "devDependencies": {
