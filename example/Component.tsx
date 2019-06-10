@@ -14,10 +14,12 @@ type State = {
     first: number;
     after?: string;
   };
+  selected:number[];
 };
 
 class Component extends React.Component<Props, State> {
   state: State = {
+    selected:[],
     columns: [
       {
         label: "Name",
@@ -51,13 +53,15 @@ class Component extends React.Component<Props, State> {
     }
   };
   render() {
-    const { columns, variables } = this.state;
+    const { columns, variables , selected} = this.state;
     return (
       <TApolloVirtualizedGrid
+      selectedItems={selected}
         graphqlQuery={query}
         columns={columns}
         variables={variables}
         onRowClick={(data, index) => {
+          this.setState({selected:[index]});
           window.location.href = `https://github.com/${data.nameWithOwner}`;
         }}
         pageSize={variables.first}

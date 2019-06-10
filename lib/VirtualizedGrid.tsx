@@ -138,7 +138,10 @@ const styles = (theme: Theme) =>
     },
     tableRowHover: {
       "&:hover": {
-        backgroundColor: theme.palette.grey[200]
+        backgroundColor:
+          theme.palette.type === "light"
+            ? "rgba(0, 0, 0, 0.07)" // grey[200]
+            : "rgba(255, 255, 255, 0.14)"
       }
     },
     tableCell: {
@@ -148,7 +151,10 @@ const styles = (theme: Theme) =>
       cursor: "initial"
     },
     selected: {
-      backgroundColor: theme.palette.grey[300]
+      backgroundColor:
+        theme.palette.type === "light"
+          ? "rgba(0, 0, 0, 0.04)" // grey[100]
+          : "rgba(255, 255, 255, 0.08)"
     }
   });
 
