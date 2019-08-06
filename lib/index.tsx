@@ -18,6 +18,16 @@ export interface ApolloListResult<T> {
   pageInfo: PageInfo;
 }
 
+export interface ListItemRenderProps<T>{
+  rowData: T;
+  key: string;
+  style: React.CSSProperties;
+  index: number;
+  className: string;
+  onClick: () => void;
+  selected: boolean;
+}
+
 interface Props<T> {
   columns: ReadonlyArray<GridColumn<T>>;
   pageSize?: number;
@@ -29,15 +39,7 @@ interface Props<T> {
   onRowClick?: (rowData: T, index: number) => void;
   listItemHeight?: number;
   listModeBreakPoint?: number;
-  listItemRenderer?: (renderProps: {
-    rowData: T;
-    key: string;
-    style: React.CSSProperties;
-    index: number;
-    className: string;
-    onClick: () => void;
-    selected: boolean;
-  }) => JSX.Element;
+  listItemRenderer?: (renderProps: ListItemRenderProps<T> ) => JSX.Element;
   selectedItems: ReadonlyArray<number>;
   updateQuery?: (previousResult: any, list: ApolloListResult<T>) => any;
   scrollToIndex?: number;
