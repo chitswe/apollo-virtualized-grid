@@ -540,9 +540,14 @@ class VritualizedGrid<T> extends React.PureComponent<
               if (!this.loadingJobs[page]) {
                 const job = loadMoreRows(page);
                 this.loadingJobs[page] = job;
-                return job.catch(e => {
-                  delete this.loadingJobs[page];
-                });
+                return job
+                  .then(result => {
+                    delete this.loadingJobs[page];
+                    return result;
+                  })
+                  .catch(e => {
+                    delete this.loadingJobs[page];
+                  });
               } else {
                 return this.loadingJobs[page];
               }
