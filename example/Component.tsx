@@ -78,12 +78,10 @@ class Component extends React.Component<Props, State> {
             nodes
           } = search;
           const result: ApolloListResult<RepoInfo> = {
-            aggregate: {
-              count: repositoryCount
-            },
             pageInfo: {
-              hasMore: hasNextPage,
-              endCursor
+              hasNextPage,
+              endCursor,
+              rowCount:repositoryCount
             },
             edges: nodes
           };
@@ -91,18 +89,17 @@ class Component extends React.Component<Props, State> {
         }}
         updateQuery={(previousResult, newList) => {
           const {
-            aggregate: { count },
-            pageInfo: { hasMore, endCursor },
+            pageInfo: { hasNextPage,rowCount, endCursor },
             edges
           } = newList;
           return {
             ...previousResult,
             search: {
               ...previousResult.search,
-              repositoryCount: count,
+              repositoryCount: rowCount,
               pageInfo: {
                 ...previousResult.search.pageInfo,
-                hasNextPage: hasMore,
+                hasNextPage,
                 endCursor
               },
               nodes: edges

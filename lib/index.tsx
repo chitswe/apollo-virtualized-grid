@@ -9,12 +9,10 @@ import ApolloClient from "apollo-client";
 export type PageInfo = {
   page?: number;
   endCursor?: string;
-  hasMore: boolean;
+  hasNextPage: boolean;
+  rowCount: number;
 };
 export interface ApolloListResult<T> {
-  aggregate: {
-    count: number;
-  };
   edges: T[];
   pageInfo: PageInfo;
 }
@@ -122,11 +120,9 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
     const { scrollToIndex } = this.state;
     const defaultListResult = {
       edges: new Array<T>(),
-      aggregate: {
-        count: 0
-      },
       pageInfo: {
-        hasMore: true
+        hasNextPage: true,
+        rowCount: 0
       }
     };
     return (
@@ -157,15 +153,12 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
           if (!parsedList)
             parsedList = {
               edges: [],
-              aggregate: {
-                count: 0
-              },
               pageInfo: {
-                hasMore: true
+                hasNextPage: true,
+                rowCount:0
               }
             };
           const {
-            aggregate: { count },
             pageInfo
           } = parsedList;
           return (
@@ -214,8 +207,7 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
                     const newList:ApolloListResult<T> = {
                       ...previousList,
                       pageInfo:fetchMoreList.pageInfo,
-                      edges:[...previousList.edges, ...fetchMoreList.edges],
-                      aggregate:fetchMoreList.aggregate
+                      edges:[...previousList.edges, ...fetchMoreList.edges]
                     };
                     if (updateQuery){                      
                       const updated =  updateQuery(previousResult, newList);
@@ -233,7 +225,7 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
                 return parseList(moreResult).edges;
               }}
               rowGetter={(index: number) => parsedList.edges[index]}
-              totalRowCount={count}
+              totalRowCount={pageInfo.rowCount}
               rowCount={parsedList.edges.length}
               isRowLoaded={(index: number) =>
                 parsedList && !!parsedList.edges[index]
