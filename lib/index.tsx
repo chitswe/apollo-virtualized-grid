@@ -4,6 +4,7 @@ import VirtualizedGrid, {
   CheckBoxColumnMode
 } from "./VirtualizedGrid";
 import { Query } from "react-apollo";
+import ApolloClient from "apollo-client";
 
 export type PageInfo = {
   page?: number;
@@ -55,6 +56,7 @@ interface Props<T> {
   clearSelectedAll?: () => void;
   debugname?: string;
   onLoadMore?: (currentPageInfo: PageInfo) => any;
+  apolloClient?: ApolloClient<any>;
 }
 
 type State = {
@@ -114,7 +116,8 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
       setSelectedAll,
       clearSelectedAll,
       debugname,
-      onLoadMore
+      onLoadMore,
+      apolloClient
     } = this.props;
     const { scrollToIndex } = this.state;
     const defaultListResult = {
@@ -128,6 +131,7 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
     };
     return (
       <Query
+        client={apolloClient}
         query={graphqlQuery}
         notifyOnNetworkStatusChange={true}
         variables={{ ...variables, pageSize , first:pageSize}}

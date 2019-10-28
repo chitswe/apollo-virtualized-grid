@@ -1,6 +1,6 @@
 {
   "name": "apollo-virtualized-grid",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "React Material-UI table with virtual scrolling, dynamic column, dynamic layout and ApolloClient as GraphQL client. ",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
