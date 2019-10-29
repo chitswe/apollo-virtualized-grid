@@ -8,7 +8,8 @@ import {
   TableCell,
   withStyles,
   CircularProgress,
-  Checkbox
+  Checkbox,
+  Badge
 } from "@material-ui/core";
 import {
   AutoSizer,
@@ -24,7 +25,8 @@ import {
   Size,
   InfiniteLoaderChildProps,
   List,
-  ListRowProps
+  ListRowProps,
+  SortDirection
 } from "react-virtualized";
 import classNames from "classnames";
 import update from "immutability-helper";
@@ -50,6 +52,7 @@ export interface GridColumn<T> {
   searchMode?: SearchMode;
   sortDirection?: SortDirectionType;
   sorted?: boolean;
+  sortOrder?: number;
   labelAlign?: "right" | "left" | "center";
   textAlign?: "right" | "left" | "center";
   format?: (props: {
@@ -72,7 +75,7 @@ export interface VirtualizedGridProps<T> {
   loadMoreRows: (page: number) => Promise<T[]>;
   isRowLoaded: (index: number) => boolean;
   pageSize?: number;
-  onColumnPropsChanged?: (columns: ReadonlyArray<GridColumn<T>>) => void;
+  onColumnPropsChanged?: (columns: ReadonlyArray<GridColumn<T>>, orderBy: string[]) => void;
   listItemHeight?: number;
   listModeBreakPoint?: number;
   listItemRenderer?: (renderProps: {
@@ -178,7 +181,7 @@ class VritualizedGrid<T> extends React.PureComponent<
     });
   }
 
-  triggerOnColumnPropsChanged(columns: ReadonlyArray<GridColumn<T>>) {
+  triggerOnColumnPropsChanged(columns: ReadonlyArray<GridColumn<T>>, orderBy:string[]) {
     const { onColumnPropsChanged } = this.props;
 
     if (!onColumnPropsChanged) {
@@ -189,7 +192,7 @@ class VritualizedGrid<T> extends React.PureComponent<
       return;
     }
     this.resetInfiniteLoaderCache();
-    onColumnPropsChanged(columns);
+    onColumnPropsChanged(columns, orderBy);
   }
 
   handleOnRowClick(event: RowMouseEventHandlerParams) {
@@ -198,69 +201,102 @@ class VritualizedGrid<T> extends React.PureComponent<
   }
 
   headerRenderer({ label, columnData }: TableHeaderProps) {
-    const { sortable, labelAlign, sortDirection, sorted } = columnData;
+    const {
+      sortable,
+      labelAlign,
+      sortDirection,
+      sorted,
+      sortOrder
+    } = columnData;
     const { classes, columns } = this.props;
     const headerHeight = 56;
-
+    const columnIndex = columns.indexOf(columnData);
     const inner = sortable ? (
-      <TableSortLabel
-        direction={sortDirection === "ASC" ? "asc" : "desc"}
-        active={sorted}
-        onClick={() => {
-          let newColumn = Object.assign({}, columnData);
-          if (sorted) {
-            switch (sortDirection) {
-              case "ASC":
-                newColumn = update(columnData, {
-                  sortDirection: {
-                    $set: "DESC"
-                  }
-                });
-                break;
-              case "DESC":
-                newColumn = update(columnData, {
-                  sorted: {
-                    $set: false
-                  }
-                });
-                break;
-              default:
-                newColumn = update(columnData, {
-                  sortDirection: {
-                    $set: "ASC"
-                  },
-                  sorted: {
-                    $set: true
-                  }
-                });
+      <Badge badgeContent={sortOrder} color="primary">
+        <TableSortLabel
+          direction={sortDirection === "ASC" ? "asc" : "desc"}
+          active={sorted}
+          onClick={() => {
+            let newColumn = Object.assign({}, columnData);
+            if (sorted) {
+              switch (sortDirection) {
+                case "ASC":
+                  newColumn.sortDirection = "DESC";
+                  break;
+                case "DESC":
+                  newColumn.sorted = false;
+                  newColumn.sortDirection = null;
+                  break;
+                default:
+                  newColumn.sortDirection = "ASC";
+                  newColumn.sorted = true;
+              }
+            } else {
+              newColumn.sortDirection = "ASC";
+              newColumn.sorted = true;
             }
-          } else {
-            newColumn = update(columnData, {
-              sortDirection: {
-                $set: "ASC"
-              },
-              sorted: {
-                $set: true
+
+            var nextColumns = columns;
+
+            if (!sorted && newColumn.sorted) {
+              // change from non ordering to ordering
+              let maxSortOrder = 0;
+              for (let c of columns) {
+                let sortOrder = c.sortOrder ? c.sortOrder : 0;
+                if (sortOrder > 0) {
+                  if (c.key !== newColumn.key) {
+                    maxSortOrder = Math.max(maxSortOrder, sortOrder);
+                  }
+                }
+              }
+              newColumn.sortOrder = maxSortOrder + 1;
+            } else if (sorted && !newColumn.sorted) {
+              // change from ordering to non ordering
+              for (let c of columns) {
+                let sortOrder = c.sortOrder ? c.sortOrder : 0;
+                if (sortOrder > 0) {
+                  if (c.key !== newColumn.key) {
+                    if (sortOrder > newColumn.sortOrder) {
+                      nextColumns = update(nextColumns, {
+                        [columns.indexOf(c)]: {
+                          sortOrder: {
+                            $set: sortOrder - 1
+                          }
+                        }
+                      });
+                    }
+                  }
+                }
+              }
+              newColumn.sortOrder = null;
+            }
+
+            nextColumns = update(nextColumns, {
+              [columnIndex]: {
+                $set: newColumn
               }
             });
-          }
-          const newColumns: Array<GridColumn<T>> = [];
-          columns.forEach(value => {
-            if (value === columnData) newColumns.push(newColumn);
-            else
-              newColumns.push(
-                update(value, {
-                  sorted: {
-                    $set: false
+            var orders: GridColumn<T>[] = [];
+            nextColumns.forEach(c=>{
+                if(c.sorted && c.sortOrder){
+                  orders.push(c);
+                }
+            });
+            var orderBy=_.orderBy(orders, ["sortOrder"], ["asc"]).map(c=>{
+                  switch(c.sortDirection){
+                    case SortDirection.DESC:
+                       return `${c.key}_Desc`;
+                    case SortDirection.ASC:
+                    default:
+                        return `${c.key}_Asc`;
                   }
-                })
-              );
-          });
-          this.triggerOnColumnPropsChanged(newColumns);
-        }}
-      >
-        {label}
-      </TableSortLabel>
+            });
+            this.triggerOnColumnPropsChanged(nextColumns,orderBy);
+          }}
+        >
+          {label}
+        </TableSortLabel>
+      </Badge>
     ) : (
       label
     );

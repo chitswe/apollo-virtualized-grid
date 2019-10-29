@@ -34,7 +34,7 @@ interface Props<T> {
   variables: any;
   listPropsName?: string;
   parseListFromQueryResult?: (queryResult: any) => ApolloListResult<T>;
-  onColumnPropsChanged?: (columns: ReadonlyArray<GridColumn<T>>) => void;
+  onColumnPropsChanged?: (columns: ReadonlyArray<GridColumn<T>>, orderBy: string[]) => void;
   onRowClick?: (rowData: T, index: number) => void;
   listItemHeight?: number;
   listModeBreakPoint?: number;

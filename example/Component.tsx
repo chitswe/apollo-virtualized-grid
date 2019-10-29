@@ -24,13 +24,15 @@ class Component extends React.Component<Props, State> {
       {
         label: "Name",
         key: "nameWithOwner",
+        sortable:true,
         width: 200
       },
       {
         label: "Description",
         key: "description",
         width: 200,
-        flexGrow: 1
+        flexGrow: 1,
+        sortable:true
       },
       {
         label: "Fork",
@@ -105,6 +107,10 @@ class Component extends React.Component<Props, State> {
               nodes: edges
             }
           };
+        }}
+        onColumnPropsChanged={(columns, orderBy)=>{
+          this.setState({columns});
+          console.log(orderBy);
         }}
         onLoadMore={pageInfo => {
           return { ...variables, after: pageInfo.endCursor };
