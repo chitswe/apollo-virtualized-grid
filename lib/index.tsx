@@ -211,7 +211,6 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
                     };
                     if (updateQuery){                      
                       const updated =  updateQuery(previousResult, newList);
-                      console.log(updated);
                       return updated;
                     }
                     else{

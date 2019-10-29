@@ -288,7 +288,7 @@ class VritualizedGrid<T> extends React.PureComponent<
                        return `${c.key}_Desc`;
                     case SortDirection.ASC:
                     default:
-                        return `${c.key}_Asc`;
+                        return c.key;
                   }
             });
             this.triggerOnColumnPropsChanged(nextColumns,orderBy);
