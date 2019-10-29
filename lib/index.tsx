@@ -7,7 +7,7 @@ import { Query } from "react-apollo";
 import ApolloClient from "apollo-client";
 
 export type PageInfo = {
-  page?: number;
+  currentPage?: number;
   endCursor?: string;
   hasNextPage: boolean;
   rowCount: number;
