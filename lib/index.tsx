@@ -53,7 +53,7 @@ interface Props<T> {
   setSelectedAll?: (items: number[]) => void;
   clearSelectedAll?: () => void;
   debugname?: string;
-  onLoadMore?: (currentPageInfo: PageInfo) => any;
+  onLoadMore: (pagination:{page:number, pageSize:number, after:string}) => any;
   apolloClient?: ApolloClient<any>;
 }
 
@@ -130,7 +130,7 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
         client={apolloClient}
         query={graphqlQuery}
         notifyOnNetworkStatusChange={true}
-        variables={{ ...variables, pageSize , first:pageSize}}
+        variables={variables}
         onCompleted={data => {
           if (onDataFetched && this.lastFatchedData !== data) {
             onDataFetched(data);
@@ -188,9 +188,7 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
               onRowClick={onRowClick}
               selectedItems={selectedItems}
               loadMoreRows={async (page: number) => {
-                const v = onLoadMore
-                  ? onLoadMore(pageInfo)
-                  : { page, pageSize,first:pageSize, skip: page-1 * pageSize, ...variables };
+                const v = onLoadMore({page,pageSize, after: pageInfo.endCursor});
                 const moreResult = await fetchMore({
                   variables: v,
                   updateQuery: (previousResult, { fetchMoreResult }) => { 

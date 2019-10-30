@@ -113,7 +113,7 @@ class Component extends React.Component<Props, State> {
           console.log(orderBy);
         }}
         onLoadMore={pageInfo => {
-          return { ...variables, after: pageInfo.endCursor };
+          return { ...variables, after: pageInfo.after };
         }}
       />
     );
