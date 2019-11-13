@@ -42,7 +42,7 @@ interface Props<T> {
   selectedItems: ReadonlyArray<number>;
   updateQuery?: (previousResult: any, list: ApolloListResult<T>) => any;
   scrollToIndex?: number;
-  onDataFetched?: (data: any) => void;
+  onDataFetched?: (data: any, variables:any) => void;
   tableClassName?: string;
   listClassName?: string;
   rootClassName?: string;
@@ -59,6 +59,7 @@ interface Props<T> {
 
 type State = {
   scrollToIndex: number;
+  variables:any;
 };
 
 class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
@@ -67,7 +68,8 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
     listPropsName: "list"
   };
   state: State = {
-    scrollToIndex: -1
+    scrollToIndex: -1,
+    variables:null
   };
   lastFatchedData: any = null;
   loaderCacheResetor: () => void;
@@ -75,17 +77,40 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
     const { scrollToIndex } = this.props;
     this.setState({ scrollToIndex });
   }
-  componentWillReceiveProps({ variables, scrollToIndex }: Props<T>) {
+  // componentWillReceiveProps({ variables, scrollToIndex }: Props<T>) {
+  //   if (variables !== this.props.variables) {
+  //     this.setState({ scrollToIndex: -1 });
+  //     if (this.loaderCacheResetor) {
+  //       this.loaderCacheResetor();
+  //     }
+  //   }
+  //   if (scrollToIndex !== this.state.scrollToIndex) {
+  //     this.setState({ scrollToIndex });
+  //   }
+  // }
+
+  static getDerivedStateFromProps<T>(props:Props<T>, state:State){
+    const newState = {...state};
+      if(props.variables !== state.variables){
+        const {pagination, ...v} = props.variables;
+        newState.variables = {...state.variables,...v};
+        newState.scrollToIndex = -1;
+      }
+      if(props.scrollToIndex !== state.scrollToIndex){
+        newState.scrollToIndex = props.scrollToIndex;
+      }
+      return newState;
+  } 
+
+  componentDidUpdate(prevProps:Props<T>){
+    const {variables} = prevProps;
     if (variables !== this.props.variables) {
-      this.setState({ scrollToIndex: -1 });
       if (this.loaderCacheResetor) {
         this.loaderCacheResetor();
       }
     }
-    if (scrollToIndex !== this.state.scrollToIndex) {
-      this.setState({ scrollToIndex });
-    }
   }
+
 
   render() {
     const {
@@ -133,7 +158,7 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
         variables={variables}
         onCompleted={data => {
           if (onDataFetched && this.lastFatchedData !== data) {
-            onDataFetched(data);
+            onDataFetched(data, this.state.variables);
           }
           this.lastFatchedData = data;
         }}
@@ -189,6 +214,7 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
               selectedItems={selectedItems}
               loadMoreRows={async (page: number) => {
                 const v = onLoadMore({page,pageSize, after: pageInfo.endCursor});
+                this.setState({variables:v});
                 const moreResult = await fetchMore({
                   variables: v,
                   updateQuery: (previousResult, { fetchMoreResult }) => { 
