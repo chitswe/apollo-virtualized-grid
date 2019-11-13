@@ -17,7 +17,7 @@ export interface ApolloListResult<T> {
   pageInfo: PageInfo;
 }
 
-export interface ListItemRenderProps<T>{
+export interface ListItemRenderProps<T> {
   rowData: T;
   key: string;
   style: React.CSSProperties;
@@ -34,15 +34,18 @@ interface Props<T> {
   variables: any;
   listPropsName?: string;
   parseListFromQueryResult?: (queryResult: any) => ApolloListResult<T>;
-  onColumnPropsChanged?: (columns: ReadonlyArray<GridColumn<T>>, orderBy: string[]) => void;
+  onColumnPropsChanged?: (
+    columns: ReadonlyArray<GridColumn<T>>,
+    orderBy: string[]
+  ) => void;
   onRowClick?: (rowData: T, index: number) => void;
   listItemHeight?: number;
   listModeBreakPoint?: number;
-  listItemRenderer?: (renderProps: ListItemRenderProps<T> ) => JSX.Element;
+  listItemRenderer?: (renderProps: ListItemRenderProps<T>) => JSX.Element;
   selectedItems: ReadonlyArray<number>;
   updateQuery?: (previousResult: any, list: ApolloListResult<T>) => any;
   scrollToIndex?: number;
-  onDataFetched?: (data: any, variables:any) => void;
+  onDataFetched?: (data: any) => void;
   tableClassName?: string;
   listClassName?: string;
   rootClassName?: string;
@@ -53,13 +56,16 @@ interface Props<T> {
   setSelectedAll?: (items: number[]) => void;
   clearSelectedAll?: () => void;
   debugname?: string;
-  onLoadMore: (pagination:{page:number, pageSize:number, after:string}) => any;
+  onLoadMore: (pagination: {
+    page: number;
+    pageSize: number;
+    after: string;
+  }) => any;
   apolloClient?: ApolloClient<any>;
 }
 
 type State = {
   scrollToIndex: number;
-  variables:any;
 };
 
 class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
@@ -68,8 +74,7 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
     listPropsName: "list"
   };
   state: State = {
-    scrollToIndex: -1,
-    variables:null
+    scrollToIndex: -1
   };
   lastFatchedData: any = null;
   loaderCacheResetor: () => void;
@@ -89,28 +94,25 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
   //   }
   // }
 
-  static getDerivedStateFromProps<T>(props:Props<T>, state:State){
-    const newState = {...state};
-      if(props.variables !== state.variables){
-        const {pagination, ...v} = props.variables;
-        newState.variables = {...state.variables,...v};
-        newState.scrollToIndex = -1;
-      }
-      if(props.scrollToIndex !== state.scrollToIndex){
-        newState.scrollToIndex = props.scrollToIndex;
-      }
-      return newState;
-  } 
+  static getDerivedStateFromProps<T>(props: Props<T>, state: State) {
+    const newState = { ...state };
+    if (props.scrollToIndex == null) newState.scrollToIndex = -1;
+    else if (props.scrollToIndex !== state.scrollToIndex) {
+      newState.scrollToIndex = props.scrollToIndex;
+    } else {
+      newState.scrollToIndex = -1;
+    }
+    return newState;
+  }
 
-  componentDidUpdate(prevProps:Props<T>){
-    const {variables} = prevProps;
+  componentDidUpdate(prevProps: Props<T>) {
+    const { variables } = prevProps;
     if (variables !== this.props.variables) {
       if (this.loaderCacheResetor) {
         this.loaderCacheResetor();
       }
     }
   }
-
 
   render() {
     const {
@@ -158,15 +160,17 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
         variables={variables}
         onCompleted={data => {
           if (onDataFetched && this.lastFatchedData !== data) {
-            onDataFetched(data, this.state.variables);
+            onDataFetched(data);
           }
           this.lastFatchedData = data;
         }}
       >
-        {({ networkStatus, fetchMore, data ,error }) => {
+        {({ networkStatus, fetchMore, data, error }) => {
           const parseList = parseListFromQueryResult
             ? (queryResult: any) =>
-                queryResult ? parseListFromQueryResult(queryResult) : defaultListResult
+                queryResult
+                  ? parseListFromQueryResult(queryResult)
+                  : defaultListResult
             : (queryResult: any) => {
                 if (queryResult[listPropsName]) {
                   return queryResult[listPropsName];
@@ -180,12 +184,10 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
               edges: [],
               pageInfo: {
                 hasNextPage: true,
-                rowCount:0
+                rowCount: 0
               }
             };
-          const {
-            pageInfo
-          } = parsedList;
+          const { pageInfo } = parsedList;
           return (
             <VirtualizedGrid
               registerForLoaderCacheReset={(resetor: () => void) => {
@@ -213,11 +215,15 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
               onRowClick={onRowClick}
               selectedItems={selectedItems}
               loadMoreRows={async (page: number) => {
-                const v = onLoadMore({page,pageSize, after: pageInfo.endCursor});
-                this.setState({variables:v});
+                const v = onLoadMore({
+                  page,
+                  pageSize,
+                  after: pageInfo.endCursor
+                });
+                this.setState({ variables: v });
                 const moreResult = await fetchMore({
                   variables: v,
-                  updateQuery: (previousResult, { fetchMoreResult }) => { 
+                  updateQuery: (previousResult, { fetchMoreResult }) => {
                     this.setState({ scrollToIndex: -1 });
                     if (parseListFromQueryResult && !updateQuery) {
                       console.log(
@@ -228,16 +234,15 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
                     if (!fetchMoreResult) return previousResult;
                     const fetchMoreList = parseList(fetchMoreResult);
                     const previousList = parseList(previousResult);
-                    const newList:ApolloListResult<T> = {
+                    const newList: ApolloListResult<T> = {
                       ...previousList,
-                      pageInfo:fetchMoreList.pageInfo,
-                      edges:[...previousList.edges, ...fetchMoreList.edges]
+                      pageInfo: fetchMoreList.pageInfo,
+                      edges: [...previousList.edges, ...fetchMoreList.edges]
                     };
-                    if (updateQuery){                      
-                      const updated =  updateQuery(previousResult, newList);
+                    if (updateQuery) {
+                      const updated = updateQuery(previousResult, newList);
                       return updated;
-                    }
-                    else{
+                    } else {
                       return {
                         ...previousResult,
                         [listPropsName]: newList
@@ -265,4 +270,10 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
 }
 
 export default ApolloVirtualizedGrid;
-export {SearchMode,CheckBoxColumnMode,GridColumn,VirtualizedGridProps, default as VirtualizedGrid} from "./VirtualizedGrid";
+export {
+  SearchMode,
+  CheckBoxColumnMode,
+  GridColumn,
+  VirtualizedGridProps,
+  default as VirtualizedGrid
+} from "./VirtualizedGrid";
