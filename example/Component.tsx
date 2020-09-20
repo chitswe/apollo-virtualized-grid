@@ -1,5 +1,5 @@
 import * as React from "react";
-import { GridColumn } from "../lib/VirtualizedGrid";
+import { GridColumn, CheckBoxColumnMode } from "../lib/VirtualizedGrid";
 import { RepoInfoFragment as RepoInfo } from "./types";
 import ApolloVirtualizedGrid, { ApolloListResult } from "../lib";
 import query from "./graphql";
@@ -15,10 +15,12 @@ type State = {
     after?: string;
   };
   selected:number[];
+  selectedAll:boolean;
 };
 
 class Component extends React.Component<Props, State> {
   state: State = {
+    selectedAll:false,
     selected:[],
     columns: [
       {
@@ -55,9 +57,22 @@ class Component extends React.Component<Props, State> {
     }
   };
   render() {
-    const { columns, variables , selected} = this.state;
+    const { columns, variables , selected, selectedAll} = this.state;
     return (
       <TApolloVirtualizedGrid
+      displayRowCount={false}
+      checkBoxColumnMode={CheckBoxColumnMode.first}
+      setSelectedAll={(items)=>{
+        this.setState({selectedAll:true, selected:items});
+      }}
+      clearSelectedAll={()=>{
+        this.setState({selected:[], selectedAll:false});
+      }}
+      setSelectedItems={(items)=>{
+        this.setState({selected:items,selectedAll:false});
+      }}
+      selectedAll={selectedAll}
+
       selectedItems={selected}
         graphqlQuery={query}
         columns={columns}

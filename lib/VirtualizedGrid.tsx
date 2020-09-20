@@ -1,16 +1,7 @@
 import * as React from "react";
-import * as _ from "lodash";
-import {
-  Theme,
-  createStyles,
-  WithStyles,
-  TableSortLabel,
-  TableCell,
-  withStyles,
-  CircularProgress,
-  Checkbox,
-  Badge
-} from "@material-ui/core";
+import range from "lodash/range";
+import filter from "lodash/filter";
+import orderBy from "lodash/orderBy";
 import {
   AutoSizer,
   Table,
@@ -26,21 +17,30 @@ import {
   InfiniteLoaderChildProps,
   List,
   ListRowProps,
-  SortDirection
+  SortDirection,
 } from "react-virtualized";
 import classNames from "classnames";
 import update from "immutability-helper";
+import { Theme } from "@material-ui/core/styles/createMuiTheme";
+import createStyles from "@material-ui/core/styles/createStyles";
+import withStyles, { WithStyles } from "@material-ui/core/styles/withStyles";
+import Badge from "@material-ui/core/Badge/Badge";
+import TableSortLabel from "@material-ui/core/TableSortLabel/TableSortLabel";
+import TableCell from "@material-ui/core/TableCell/TableCell";
+import Checkbox from "@material-ui/core/Checkbox/Checkbox";
+import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
+import Typography from "@material-ui/core/Typography/Typography";
 
 export enum SearchMode {
   in = 1,
   contain = 2,
-  startWith = 3
+  startWith = 3,
 }
 
 export enum CheckBoxColumnMode {
   none,
   first,
-  last
+  last,
 }
 
 export interface GridColumn<T> {
@@ -66,6 +66,7 @@ export interface GridColumn<T> {
 
 export interface VirtualizedGridProps<T> {
   columns: ReadonlyArray<GridColumn<T>>;
+  displayRowCount?: boolean;
   rowGetter: (index: number) => T;
   initialLoading: boolean;
   rowCount: number;
@@ -75,7 +76,10 @@ export interface VirtualizedGridProps<T> {
   loadMoreRows: (page: number) => Promise<T[]>;
   isRowLoaded: (index: number) => boolean;
   pageSize?: number;
-  onColumnPropsChanged?: (columns: ReadonlyArray<GridColumn<T>>, orderBy: string[]) => void;
+  onColumnPropsChanged?: (
+    columns: ReadonlyArray<GridColumn<T>>,
+    orderBy: string[]
+  ) => void;
   listItemHeight?: number;
   listModeBreakPoint?: number;
   listItemRenderer?: (renderProps: {
@@ -107,10 +111,10 @@ const styles = (theme: Theme) =>
     root: {
       flex: 1,
       display: "flex",
-      flexDirection: "column"
+      flexDirection: "column",
     },
     autoSizerWrapper: {
-      flex: 1
+      flex: 1,
     },
     placeCenter: {
       position: "absolute",
@@ -118,47 +122,50 @@ const styles = (theme: Theme) =>
       bottom: 0,
       left: 0,
       right: 0,
-      margin: "auto"
+      margin: "auto",
     },
     table: {
-      fontFamily: theme.typography.fontFamily
+      fontFamily: theme.typography.fontFamily,
     },
     list: {
-      fontFamily: theme.typography.fontFamily
+      fontFamily: theme.typography.fontFamily,
     },
     cellLoadingIndicator: {
       backgroundColor: "#DDDDDD",
       flex: 1,
-      color: "#DDDDDD"
+      color: "#DDDDDD",
     },
     flexContainer: {
       display: "flex",
       alignItems: "center",
-      boxSizing: "border-box"
+      boxSizing: "border-box",
     },
     tableRow: {
-      cursor: "pointer"
+      cursor: "pointer",
     },
     tableRowHover: {
       "&:hover": {
         backgroundColor:
           theme.palette.type === "light"
             ? "rgba(0, 0, 0, 0.07)" // grey[200]
-            : "rgba(255, 255, 255, 0.14)"
-      }
+            : "rgba(255, 255, 255, 0.14)",
+      },
     },
     tableCell: {
-      flex: 1
+      flex: 1,
     },
     noClick: {
-      cursor: "initial"
+      cursor: "initial",
     },
     selected: {
       backgroundColor:
         theme.palette.type === "light"
           ? "rgba(0, 0, 0, 0.04)" // grey[100]
-          : "rgba(255, 255, 255, 0.08)"
-    }
+          : "rgba(255, 255, 255, 0.08)",
+    },
+    rowCountPanel: {
+      textAlign: "center",
+    },
   });
 
 class VritualizedGrid<T> extends React.PureComponent<
@@ -168,7 +175,9 @@ class VritualizedGrid<T> extends React.PureComponent<
     listItemHeight: 56,
     pageSize: 20,
     listModeBreakPoint: 600,
-    checkBoxColumnMode: CheckBoxColumnMode.none
+    checkBoxColumnMode: CheckBoxColumnMode.none,
+    displayRowCount: true,
+    selectedItems:[]
   };
   infiniteLoader: InfiniteLoader | null = null;
   loadingJobs: { [id: number]: Promise<T[]> } = {};
@@ -177,11 +186,14 @@ class VritualizedGrid<T> extends React.PureComponent<
 
     return classNames(classes.tableRow, classes.flexContainer, rowClassName, {
       [classes.tableRowHover]: index !== -1 && onRowClick != null,
-      [classes.selected]: selectedItems && selectedItems.indexOf(index) > -1
+      [classes.selected]: selectedItems && selectedItems.indexOf(index) > -1,
     });
   }
 
-  triggerOnColumnPropsChanged(columns: ReadonlyArray<GridColumn<T>>, orderBy:string[]) {
+  triggerOnColumnPropsChanged(
+    columns: ReadonlyArray<GridColumn<T>>,
+    orderBy: string[]
+  ) {
     const { onColumnPropsChanged } = this.props;
 
     if (!onColumnPropsChanged) {
@@ -206,7 +218,7 @@ class VritualizedGrid<T> extends React.PureComponent<
       labelAlign,
       sortDirection,
       sorted,
-      sortOrder
+      sortOrder,
     } = columnData;
     const { classes, columns } = this.props;
     const headerHeight = 56;
@@ -260,9 +272,9 @@ class VritualizedGrid<T> extends React.PureComponent<
                       nextColumns = update(nextColumns, {
                         [columns.indexOf(c)]: {
                           sortOrder: {
-                            $set: sortOrder - 1
-                          }
-                        }
+                            $set: sortOrder - 1,
+                          },
+                        },
                       });
                     }
                   }
@@ -273,25 +285,25 @@ class VritualizedGrid<T> extends React.PureComponent<
 
             nextColumns = update(nextColumns, {
               [columnIndex]: {
-                $set: newColumn
-              }
+                $set: newColumn,
+              },
             });
             var orders: GridColumn<T>[] = [];
-            nextColumns.forEach(c=>{
-                if(c.sorted && c.sortOrder){
-                  orders.push(c);
-                }
+            nextColumns.forEach((c) => {
+              if (c.sorted && c.sortOrder) {
+                orders.push(c);
+              }
             });
-            var orderBy=_.orderBy(orders, ["sortOrder"], ["asc"]).map(c=>{
-                  switch(c.sortDirection){
-                    case SortDirection.DESC:
-                       return `${c.key}_Desc`;
-                    case SortDirection.ASC:
-                    default:
-                        return c.key;
-                  }
+            var _orderBy = orderBy(orders, ["sortOrder"], ["asc"]).map((c) => {
+              switch (c.sortDirection) {
+                case SortDirection.DESC:
+                  return `${c.key}_Desc`;
+                case SortDirection.ASC:
+                default:
+                  return c.key;
+              }
             });
-            this.triggerOnColumnPropsChanged(nextColumns,orderBy);
+            this.triggerOnColumnPropsChanged(nextColumns, _orderBy);
           }}
         >
           {label}
@@ -324,7 +336,7 @@ class VritualizedGrid<T> extends React.PureComponent<
       <TableCell
         component="div"
         className={classNames(classes.tableCell, classes.flexContainer, {
-          [classes.noClick]: onRowClick == null
+          [classes.noClick]: onRowClick == null,
         })}
         variant="body"
         style={{ height: 56 }}
@@ -363,7 +375,7 @@ class VritualizedGrid<T> extends React.PureComponent<
       onRowClick,
       selectedItems,
       scrollToIndex,
-      listClassName
+      listClassName,
     } = this.props;
     return (
       <List
@@ -392,8 +404,8 @@ class VritualizedGrid<T> extends React.PureComponent<
             className: classNames(classes.tableRow, {
               [classes.tableRowHover]: index !== -1 && onRowClick != null,
               [classes.selected]:
-                selectedItems && selectedItems.indexOf(index) > -1
-            })
+                selectedItems && selectedItems.indexOf(index) > -1,
+            }),
           });
         }}
       />
@@ -408,7 +420,7 @@ class VritualizedGrid<T> extends React.PureComponent<
       selectedAll,
       rowCount,
       classes,
-      selectedItems
+      selectedItems,
     } = this.props;
     return (
       <Column
@@ -419,7 +431,7 @@ class VritualizedGrid<T> extends React.PureComponent<
             checked={selectedAll}
             onChange={(e, checked) => {
               if (checked) {
-                setSelectedAll(_.range(0, rowCount, 1));
+                setSelectedAll(range(0, rowCount, 1));
               } else {
                 clearSelectedAll();
               }
@@ -436,19 +448,22 @@ class VritualizedGrid<T> extends React.PureComponent<
           else {
             return (
               <Checkbox
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
                 checked={params.rowData.selected}
                 onChange={(e, checked) => {
                   const { index } = params.rowData;
                   if (checked) {
                     setSelectedItems(
                       update(selectedItems, {
-                        $push: [index]
+                        $push: [index],
                       })
                     );
                   } else if (selectedItems.indexOf(index) > -1) {
                     setSelectedItems(
                       update(selectedItems, {
-                        $splice: [[selectedItems.indexOf(index), 1]]
+                        $splice: [[selectedItems.indexOf(index), 1]],
                       })
                     );
                   }
@@ -473,7 +488,7 @@ class VritualizedGrid<T> extends React.PureComponent<
       pageSize,
       scrollToIndex,
       tableClassName,
-      checkBoxColumnMode
+      checkBoxColumnMode,
     } = this.props;
     return (
       <Table
@@ -497,7 +512,7 @@ class VritualizedGrid<T> extends React.PureComponent<
         {checkBoxColumnMode === CheckBoxColumnMode.first
           ? this.renderCheckBoxColumn()
           : null}
-        {_.filter(
+        {filter(
           columns,
           (column: GridColumn<T>) => !column.hideAt || column.hideAt < width
         ).map((column: GridColumn<T>) => {
@@ -508,7 +523,7 @@ class VritualizedGrid<T> extends React.PureComponent<
                 key: params.dataKey,
                 rowData: params.rowData,
                 selected: params.rowData.selected,
-                index: params.rowData.index
+                index: params.rowData.index,
               });
             } else {
               const cellData = params.rowData[params.dataKey];
@@ -556,14 +571,14 @@ class VritualizedGrid<T> extends React.PureComponent<
       classes,
       rootClassName,
       headerComponent,
-      registerForLoaderCacheReset
+      registerForLoaderCacheReset,
     } = this.props;
     return (
       <div className={`${classes.root} ${rootClassName}`}>
         {headerComponent}
         <div className={classes.autoSizerWrapper}>
           <InfiniteLoader
-            ref={infiniteLoader => {
+            ref={(infiniteLoader) => {
               this.infiniteLoader = infiniteLoader;
               if (registerForLoaderCacheReset) {
                 registerForLoaderCacheReset(
@@ -577,11 +592,11 @@ class VritualizedGrid<T> extends React.PureComponent<
                 const job = loadMoreRows(page);
                 this.loadingJobs[page] = job;
                 return job
-                  .then(result => {
+                  .then((result) => {
                     delete this.loadingJobs[page];
                     return result;
                   })
-                  .catch(e => {
+                  .catch((e) => {
                     delete this.loadingJobs[page];
                   });
               } else {
@@ -592,9 +607,9 @@ class VritualizedGrid<T> extends React.PureComponent<
             minimumBatchSize={pageSize}
             isRowLoaded={({ index }) => isRowLoaded(index)}
           >
-            {infiniteLoaderProps => (
+            {(infiniteLoaderProps) => (
               <AutoSizer defaultHeight={500}>
-                {size => {
+                {(size) => {
                   if (loading)
                     return (
                       <CircularProgress
@@ -610,6 +625,32 @@ class VritualizedGrid<T> extends React.PureComponent<
             )}
           </InfiniteLoader>
         </div>
+        {this.props.displayRowCount ? (
+          <Typography
+            variant="body2"
+            color={
+              this.props.selectedAll || this.props.selectedItems.length > 0
+                ? "secondary"
+                : "textPrimary"
+            }
+            className={classes.rowCountPanel}
+          >
+            {(() => {
+              if (
+                this.props.selectedAll ||
+                this.props.selectedItems.length > 0
+              ) {
+                if (this.props.selectedAll) {
+                  return `Total ${totalRowCount} rows selected`;
+                } else {
+                  return `${this.props.selectedItems.length} of ${totalRowCount} rows selected`;
+                }
+              } else {
+                return `${rowCount} of ${totalRowCount} rows loaded`;
+              }
+            })()}
+          </Typography>
+        ) : null}
       </div>
     );
   }
