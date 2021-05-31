@@ -48,7 +48,7 @@ class Component extends React.Component<Props, State> {
         key: "owner/id",
         width: 150,
         format: ({ key, rowData }) => {
-          return rowData.owner.login;
+          return rowData?.owner?.login;
         }
       }
     ],
@@ -91,12 +91,16 @@ class Component extends React.Component<Props, State> {
           }
           const {
             repositoryCount,
-            pageInfo: { hasNextPage, endCursor },
+            pageInfo: { hasNextPage, endCursor,currentPage,hasPreviousPage,pageCount,pageSize },
             nodes
           } = search;
           const result: ApolloListResult<RepoInfo> = {
             pageInfo: {
               hasNextPage,
+              currentPage,
+              hasPreviousPage,
+              pageCount,
+              pageSize,
               endCursor,
               rowCount:repositoryCount
             },

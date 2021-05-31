@@ -1,5 +1,5 @@
 
-import gql from "graphql-tag";
+import {gql} from "@apollo/client"
 const query = gql`query Search($first:Int=20, $after:String ) { 
     search(first:$first, after:$after,query: "virtualize", type:REPOSITORY){
       repositoryCount

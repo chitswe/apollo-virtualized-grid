@@ -5,8 +5,8 @@ import VirtualizedGrid, {
   GridColumn,
   CheckBoxColumnMode,
 } from "./VirtualizedGrid";
-import { Query } from "react-apollo";
-import ApolloClient, { ApolloQueryResult } from "apollo-client";
+import { Query } from "@apollo/client/react/components";
+import  { ApolloClient, ApolloQueryResult  } from "@apollo/client";
 import range from "lodash/range";
 
 export type PageInfo = {
@@ -81,7 +81,7 @@ interface Props<T> {
     pageSize: number;
     after: string;
   }) => any;
-  apolloClient?: ApolloClient<any>;
+  apolloClient?: ApolloClient<object>;
 }
 
 type State = {

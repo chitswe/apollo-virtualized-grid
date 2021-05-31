@@ -1,13 +1,8 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { ApolloProvider, Query } from "react-apollo";
+import {  } from "@apollo/client/react/components";
 import CssBaseline from "@material-ui/core/CssBaseline";
-import ApolloClient from "apollo-client";
-import {
-  InMemoryCache,
-  IntrospectionFragmentMatcher
-} from "apollo-cache-inmemory";
-import { HttpLink } from "apollo-link-http";
+import {ApolloClient, InMemoryCache, HttpLink, ApolloProvider} from "@apollo/client";
 import Component from "./Component";
 import introspectionQueryResultData from "./fragmentTypes.json";
 import secret from "./secret.json";
@@ -22,13 +17,11 @@ const authFetch = (input: RequestInfo, init?: RequestInit) => {
   return fetch(input, init);
 };
 
-const fragmentMatcher = new IntrospectionFragmentMatcher({
-  introspectionQueryResultData
-});
+
 const apolloClient = new ApolloClient({
   connectToDevTools: true,
   ssrMode: false,
-  cache: new InMemoryCache({ fragmentMatcher }).restore(
+  cache: new InMemoryCache({  }).restore(
     window.__APOLLO_STATE__
   ),
   link: new HttpLink({

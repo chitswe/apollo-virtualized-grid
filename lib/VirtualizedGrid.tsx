@@ -355,8 +355,7 @@ class VritualizedGrid<T> extends React.PureComponent<
     const { rowGetter, selectedItems } = this.props;
     const rowData: any = rowGetter(index);
     if (rowData) {
-      rowData.selected = selectedItems && selectedItems.includes(index);
-      rowData.index = index;
+      return {...rowData, selected:selectedItems && selectedItems.includes(index),index};
     }
     return rowData;
   }
