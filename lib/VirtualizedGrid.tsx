@@ -97,6 +97,7 @@ export interface VirtualizedGridProps<T> {
   tableClassName?: string;
   listClassName?: string;
   headerComponent?: React.ReactNode;
+  footerComponent?: React.ReactNode;
   rootClassName?: string;
   checkBoxColumnMode?: CheckBoxColumnMode;
   setSelectedItems?: (items: number[]) => void;
@@ -177,7 +178,7 @@ class VritualizedGrid<T> extends React.PureComponent<
     listModeBreakPoint: 600,
     checkBoxColumnMode: CheckBoxColumnMode.none,
     displayRowCount: true,
-    selectedItems:[]
+    selectedItems: [],
   };
   infiniteLoader: InfiniteLoader | null = null;
   loadingJobs: { [id: number]: Promise<T[]> } = {};
@@ -213,13 +214,8 @@ class VritualizedGrid<T> extends React.PureComponent<
   }
 
   headerRenderer({ label, columnData }: TableHeaderProps) {
-    const {
-      sortable,
-      labelAlign,
-      sortDirection,
-      sorted,
-      sortOrder,
-    } = columnData;
+    const { sortable, labelAlign, sortDirection, sorted, sortOrder } =
+      columnData;
     const { classes, columns } = this.props;
     const headerHeight = 56;
     const columnIndex = columns.indexOf(columnData);
@@ -355,7 +351,11 @@ class VritualizedGrid<T> extends React.PureComponent<
     const { rowGetter, selectedItems } = this.props;
     const rowData: any = rowGetter(index);
     if (rowData) {
-      return {...rowData, selected:selectedItems && selectedItems.includes(index),index};
+      return {
+        ...rowData,
+        selected: selectedItems && selectedItems.includes(index),
+        index,
+      };
     }
     return rowData;
   }
@@ -570,6 +570,7 @@ class VritualizedGrid<T> extends React.PureComponent<
       classes,
       rootClassName,
       headerComponent,
+      footerComponent,
       registerForLoaderCacheReset,
     } = this.props;
     return (
@@ -650,6 +651,7 @@ class VritualizedGrid<T> extends React.PureComponent<
             })()}
           </Typography>
         ) : null}
+        {footerComponent}
       </div>
     );
   }
