@@ -65,6 +65,7 @@ export interface GridColumn<T> {
 }
 
 export interface VirtualizedGridProps<T> {
+  extraData?:any,
   columns: ReadonlyArray<GridColumn<T>>;
   displayRowCount?: boolean;
   rowGetter: (index: number) => T;
@@ -181,6 +182,8 @@ class VritualizedGrid<T> extends React.PureComponent<
     selectedItems: [],
   };
   infiniteLoader: InfiniteLoader | null = null;
+  tableRef:Table|null = null;
+  listRef:List|null = null;
   loadingJobs: { [id: number]: Promise<T[]> } = {};
   getRowClassName({ index }: Index) {
     const { classes, rowClassName, onRowClick, selectedItems } = this.props;
@@ -189,6 +192,15 @@ class VritualizedGrid<T> extends React.PureComponent<
       [classes.tableRowHover]: index !== -1 && onRowClick != null,
       [classes.selected]: selectedItems && selectedItems.indexOf(index) > -1,
     });
+  }
+
+  componentDidUpdate({extraData}:VirtualizedGridProps<T>){
+    if(extraData != this.props.extraData){
+      if(this.listRef)
+        this.listRef.forceUpdate();
+      if(this.tableRef)
+        this.tableRef.forceUpdate();
+    }
   }
 
   triggerOnColumnPropsChanged(
@@ -382,7 +394,10 @@ class VritualizedGrid<T> extends React.PureComponent<
           scrollToIndex || scrollToIndex === 0 ? scrollToIndex : -1
         }
         className={`${classes.list} ${listClassName}`}
-        ref={registerChild}
+        ref={(r) => {
+          this.listRef = r;
+          registerChild(r);
+        }}
         height={height}
         width={width}
         onRowsRendered={onRowsRendered}
@@ -496,7 +511,10 @@ class VritualizedGrid<T> extends React.PureComponent<
         }
         onRowClick={this.handleOnRowClick.bind(this)}
         onRowsRendered={onRowsRendered}
-        ref={registerChild}
+        ref={(r) => {
+          this.tableRef = r;
+          registerChild(r);
+        }}
         rowGetter={({ index }) => {
           return this.rowGetter(index);
         }}

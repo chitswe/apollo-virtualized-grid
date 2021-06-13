@@ -46,6 +46,7 @@ export interface ListItemRenderProps<T> {
 }
 
 interface Props<T> {
+  extraData:any;
   refetchRequestCounter?:number;
   columns: ReadonlyArray<GridColumn<T>>;
   pageSize?: number;
@@ -105,17 +106,6 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
     const { scrollToIndex } = this.props;
     this.setState({ scrollToIndex });
   }
-  // componentWillReceiveProps({ variables, scrollToIndex }: Props<T>) {
-  //   if (variables !== this.props.variables) {
-  //     this.setState({ scrollToIndex: -1 });
-  //     if (this.loaderCacheResetor) {
-  //       this.loaderCacheResetor();
-  //     }
-  //   }
-  //   if (scrollToIndex !== this.state.scrollToIndex) {
-  //     this.setState({ scrollToIndex });
-  //   }
-  // }
 
   static getDerivedStateFromProps<T>(props: Props<T>, state: State) {
     const newState = { ...state };
@@ -142,6 +132,7 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
 
   render() {
     const {
+      extraData,
       displayRowCount,
       graphqlQuery,
       columns,
@@ -219,6 +210,7 @@ class ApolloVirtualizedGrid<T> extends React.Component<Props<T>> {
           const { pageInfo } = parsedList;
           return (
             <VirtualizedGrid
+              extraData={extraData}
               displayRowCount={displayRowCount}
               registerForLoaderCacheReset={(resetor: () => void) => {
                 this.loaderCacheResetor = resetor;
