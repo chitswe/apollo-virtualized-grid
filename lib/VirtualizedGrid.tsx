@@ -60,6 +60,7 @@ export interface GridColumn<T> {
     rowData: T;
     selected: boolean;
     index: number;
+    extraData:any;
   }) => React.ReactNode;
   hideAt?: number;
 }
@@ -503,6 +504,7 @@ class VritualizedGrid<T> extends React.PureComponent<
       scrollToIndex,
       tableClassName,
       checkBoxColumnMode,
+      extraData
     } = this.props;
     return (
       <Table
@@ -541,6 +543,7 @@ class VritualizedGrid<T> extends React.PureComponent<
                 rowData: params.rowData,
                 selected: params.rowData.selected,
                 index: params.rowData.index,
+                extraData
               });
             } else {
               const cellData = params.rowData[params.dataKey];
